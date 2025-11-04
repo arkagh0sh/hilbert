@@ -3,9 +3,13 @@ mod helpers;
 mod atoms;
 mod dlo;
 
+use std::collections::BTreeSet;
+
 use num_traits::{Zero, One, Pow};
 
 use mon::*;
+
+use crate::helpers::count_between;
 
 fn main() {
     let x: Polynomial<i8, String> = Polynomial::var(String::from("x"));
@@ -24,5 +28,7 @@ fn main() {
     println!("{}",y.clone().is_reduced(&[x.clone()]));
     println!("{}",(x.clone() + y.clone()).leading_mon());
     println!("{}",p.clone().syzygy(&(y + x.clone())));
-    println!("{}",p.remainder(&[i]));   
+    println!("{}",p.remainder(&[i]));
+    let nums = count_between::<i32>(BTreeSet::from([1, 3, 5,6,7]),BTreeSet::from([2,4]));
+    println!("{:?}", nums);  
 }

@@ -11,7 +11,7 @@ use std::collections::{BTreeSet, HashSet};
 //         Self : Sized;
 // }
 
-trait AtomsWithOrd : Ord {
+pub trait AtomsWithOrd : Ord {
 
     fn sets_in_same_orbit(first : BTreeSet<Self>, second : BTreeSet<Self>, support : BTreeSet<Self>) -> bool
     where

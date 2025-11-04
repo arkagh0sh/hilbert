@@ -79,3 +79,31 @@ pub fn union<X : Ord> (first : BTreeSet<X>, second : BTreeSet<X>) -> BTreeSet<X>
     }
     answer
 }
+
+// Returns a list of vectors (a_0,a_1,...) where a_i is the number of elements in to_count in the interval [b_i, b_{i+1}) where bounds = (b_0,b_1,...)
+
+pub fn count_between<X : Ord +Copy + Clone> (to_count : BTreeSet<X>, bounds : BTreeSet<X>) -> Vec<usize> {
+
+    let mut counts = Vec::new();
+
+    let bounds_vec : Vec<X> = bounds.into_iter().collect();
+
+    if bounds_vec.is_empty() {
+        return vec![to_count.len()];
+    } else {
+        counts.push(to_count.range(..bounds_vec[0]).count());
+    }
+
+    for pairs in bounds_vec.windows(2) {
+        let a = &pairs[0];
+        let b = &pairs[1];
+        let k = to_count.range(a..b).count();
+        counts.push(k);
+    }
+
+    if !bounds_vec.is_empty() {
+        counts.push(to_count.range(bounds_vec[bounds_vec.len() - 1]..).count());
+    }
+
+    return counts;
+}
