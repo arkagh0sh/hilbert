@@ -2,6 +2,7 @@ mod mon;
 mod helpers;
 mod atoms;
 mod dlo;
+mod set_with_atoms;
 
 use std::collections::BTreeSet;
 
