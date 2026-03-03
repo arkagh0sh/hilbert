@@ -5,12 +5,12 @@ mod dlo;
 mod set_with_atoms;
 
 use std::collections::BTreeSet;
-
+use rug::Rational;
 use num_traits::{Zero, One, Pow};
 
 use mon::*;
 
-use crate::helpers::count_between;
+use crate::{atoms::AtomsWithOrd, dlo::DLO, helpers::count_between};
 
 fn main() {
     let x: Polynomial<i8, String> = Polynomial::var(String::from("x"));
@@ -31,5 +31,6 @@ fn main() {
     println!("{}",p.clone().syzygy(&(y + x.clone())));
     println!("{}",p.remainder(&[i]));
     let nums = count_between::<i32>(BTreeSet::from([1, 3, 5,6,7]),BTreeSet::from([2,4]));
-    println!("{:?}", nums);  
+    println!("{:?}", nums);
+    println!("{:?}",DLO::orbit_reps(2));
 }
