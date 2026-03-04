@@ -11,7 +11,7 @@ pub struct DLO {
 }
 
 impl DLO {
-    pub fn new(q : Rational) -> Self {
+    pub fn new(q : Rational) -> DLO {
         DLO {val : q}
     }
 }

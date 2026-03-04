@@ -3,9 +3,9 @@ mod helpers;
 mod atoms;
 mod dlo;
 mod set_with_atoms;
+use rug::Rational;
 
 use std::collections::BTreeSet;
-use rug::Rational;
 use num_traits::{Zero, One, Pow};
 
 use mon::*;

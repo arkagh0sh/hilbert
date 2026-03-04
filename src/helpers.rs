@@ -1,7 +1,7 @@
 use std::hash::Hash;
 use std::cmp::Ord;
 use std::ops::AddAssign;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::clone::Clone;
 use num_traits::identities::Zero;
 
@@ -106,4 +106,18 @@ pub fn count_between<X : Ord +Copy + Clone> (to_count : BTreeSet<X>, bounds : BT
     }
 
     return counts;
+}
+
+pub fn has_unique_elements<T>(iter: T) -> bool 
+where 
+    T: IntoIterator, 
+    T::Item: Eq + std::hash::Hash 
+{
+    let mut set = HashSet::new();
+    for item in iter {
+        if !set.insert(item) {
+            return false; // Found a duplicate!
+        }
+    }
+    true
 }

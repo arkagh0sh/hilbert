@@ -416,6 +416,6 @@ impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero, X : Hash + Ord + 
 
 // have to define partial aut and their applications
 
-impl<F, X:AtomsWithOrd> SetWithAtoms<X> for Polynomial<F,X> {
+// impl<F, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
 
-}
+// }
