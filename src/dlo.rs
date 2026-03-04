@@ -1,5 +1,5 @@
 use rug::Rational;
-use std::fmt::{Debug, Formatter, Result};
+use std::{collections::BTreeSet, fmt::{Debug, Formatter, Result}};
 use itertools::Itertools;
 use super::atoms::*;
 
@@ -26,7 +26,7 @@ impl Debug for DLO {
  
 
 impl AtomsWithOrd for DLO {
-    fn tuples_in_same_orbit(first : Vec<Self>, second : Vec<Self>) -> bool
+    fn sets_in_same_orbit(first : BTreeSet<Self>, second : BTreeSet<Self>) -> bool
         where
             Self: Sized {
                 let n = first.len();

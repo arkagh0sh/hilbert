@@ -121,3 +121,42 @@ where
     }
     true
 }
+
+pub fn union_all<T: Ord + Clone>(sets: &[BTreeSet<T>]) -> BTreeSet<T> {
+    sets.into_iter()
+        .flat_map(|s| s.iter().cloned())
+        .collect()
+}
+
+pub fn pointwise_pairs_owned<T: Ord + Clone>(
+    a: &BTreeSet<T>,
+    b: &BTreeSet<T>,
+) -> Vec<(T, T)> {
+    a.iter().cloned().zip(b.iter().cloned()).collect()
+}
+
+pub fn map_from_sets_owned<K: Ord + Clone, V: Ord + Clone>(
+    keys: &BTreeSet<K>,
+    vals: &BTreeSet<V>,
+) -> BTreeMap<K, V> {
+    keys.iter().cloned().zip(vals.iter().cloned()).collect()
+}
+
+pub fn invert<K, V>(m: &BTreeMap<K, V>) -> BTreeMap<V, K>
+where
+    K: Ord + Clone,
+    V: Ord + Clone,
+{
+    m.iter().map(|(k, v)| (v.clone(), k.clone())).collect()
+}
+
+pub fn compose_partial<K, M, V>(f: &BTreeMap<K, M>, g: &BTreeMap<M, V>) -> BTreeMap<K, V>
+where
+    K: Ord + Clone,
+    M: Ord,
+    V: Clone,
+{
+    f.iter()
+        .filter_map(|(k, m)| g.get(m).map(|v| (k.clone(), v.clone())))
+        .collect()
+}
