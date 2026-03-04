@@ -1,5 +1,21 @@
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use super::atoms::*;
+
+pub struct PartialAut<A> where A : AtomsWithOrd {
+    mappings : BTreeMap<A,A>
+}
+
+impl<A : AtomsWithOrd> PartialAut<A> {
+    // add a check that the map is a bijection
+    pub fn new(maps  : BTreeMap<A,A>) -> Self {
+        PartialAut {mappings : maps}
+    }
+
+    pub fn apply(a : A) -> A {
+        if 
+    }
+}
+
 pub trait SetWithAtoms<A> where A : AtomsWithOrd {
 
     /*
