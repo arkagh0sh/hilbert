@@ -28,20 +28,25 @@ impl<A : Hash + AtomsWithOrd + Clone + Copy> PartialAut<A> {
     }
 }
 
-pub trait ApplyPAut<A : AtomsWithOrd> {
-    fn apply_paut(&self, paut : &PartialAut<A>) -> Self;
-}
-
 /*
 Since we mean to use it only for polynomials,
 we only work with equivariant orbits.
 */
-pub trait SetWithAtoms<A : AtomsWithOrd> : ApplyPAut<A> {
+pub trait SetWithAtoms<A : AtomsWithOrd + Clone> : Eq {
+
+    // Applies a partial automorphism to an element
+    fn apply_paut(&self, paut : PartialAut<A>) -> Self
+    where
+        Self : Sized;
+
+    //Gives the support of an element.
+    fn support(&self) -> Vec<A>;
+
     /*
     Checks if two tuples are in the same orbit
     */
 
-    fn tuples_in_same_orbit(first : &BTreeSet<Self>, second : &BTreeSet<Self>) -> bool
+    fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
     where
         Self: Sized;
     
@@ -52,21 +57,39 @@ pub trait SetWithAtoms<A : AtomsWithOrd> : ApplyPAut<A> {
     fn prod_orbit_rep(orbits : &Vec<Self>) -> 
     Vec<Vec<Self>>
     where
-        Self : Sized;
+        Self : Sized {
+            let support_list : Vec<Vec<A>> = orbits.iter().map(|x| x.support()).collect();
+            let support_len_list : Vec<usize> = orbits.iter().map(|x| x.support().len()).collect();
+            let all_rep : Vec<Vec<A>> = A::orbit_reps(support_len_list.iter().sum());
+            let all_rep_split : Vec<Vec<Vec<A>>> = all_rep.into_iter().map(|inner_vec| {
+                let mut sub_vectors = Vec::new();
+                let mut current_slice = &inner_vec[..];
+                
+                for len in support_len_list {
+                    if current_slice.len() >= len {
+                        let (first, second) = current_slice.split_at(len);
+                        sub_vectors.push(first.to_vec());
+                        current_slice = second; // Move the pointer forward
+                        }
+                    }
+                    if !current_slice.is_empty() {
+                        panic!("This part of the code should not be reached");
+                    }
+                    sub_vectors
+                }).collect();
+
+                let required_reps_split : Vec<Vec<Vec<A>>> = all_rep_split.into_iter().filter(|x| are_pointwise_equivalent(x, &support_list, A::in_same_orbit)).collect();
+
+                return Vec::new();
+            }
 
     /*
-    Given a representative of an orbits and a support, output the list of all elements in the orbit supported by the given supprt
+    Given a representative of an orbits and a support, output the list of all elements in the orbit supported by the given supprt.
+    Technically we should have a method to compute the algebraic closure of a support. But we omit that for simplicity.
     */
 
     fn project_to_support(rep : &Self, support : &Vec<A>) -> Vec<Self>
     where
         Self : Sized;
 
-    fn apply_PAut(&self, paut : PartialAut<A>) -> Self
-    where
-        Self : Sized;
 }
-
-// impl SetWithAtoms<A : AtomsWithOrd> for Vec<A> {
-
-// }

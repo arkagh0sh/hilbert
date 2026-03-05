@@ -160,3 +160,18 @@ where
         .filter_map(|(k, m)| g.get(m).map(|v| (k.clone(), v.clone())))
         .collect()
 }
+
+pub fn are_pointwise_equivalent<T, F>(vec_a: &Vec<T>, vec_b: &Vec<T>, relation: F) -> bool 
+where 
+    F: Fn(&T, &T) -> bool 
+{
+    // 1. Length check is crucial because .zip() stops at the shortest vector
+    if vec_a.len() != vec_b.len() {
+        return false;
+    }
+
+    // 2. Zip them and check the predicate for every pair
+    vec_a.iter()
+         .zip(vec_b.iter())
+         .all(|(a, b)| relation(a, b))
+}
