@@ -60,4 +60,7 @@ pub trait SetWithAtoms<A : AtomsWithOrd> : ApplyPAut<A> {
     where
         Self : Sized;
 
+    fn apply_PAut(&self, paut : PartialAut<A>) -> Self
+    where
+        Self : Sized;
 }

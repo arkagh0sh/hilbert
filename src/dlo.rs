@@ -1,5 +1,9 @@
 use rug::Rational;
+<<<<<<< HEAD
 use std::{collections::BTreeSet, fmt::{Debug, Formatter, Result}};
+=======
+use std::{fmt::{Debug, Display, Formatter, Result}};
+>>>>>>> 5854a52 (small changes)
 use itertools::Itertools;
 use super::atoms::*;
 
@@ -17,6 +21,14 @@ impl DLO {
 }
 
 impl Debug for DLO {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let mut to_view : String = String::new();
+        to_view = to_view + "d(" + &self.val.to_string() + ")";
+        write!(f,"{}",to_view)
+    }
+}
+
+impl Display for DLO {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut to_view : String = String::new();
         to_view = to_view + "d(" + &self.val.to_string() + ")";

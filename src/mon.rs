@@ -8,8 +8,8 @@ use num_traits::{Zero, Pow, ConstOne};
 use num_traits::identities::One;
 
 use crate::atoms::AtomsWithOrd;
-use crate::set_with_atoms::*;
-
+use crate::set_with_atoms::SetWithAtoms;
+use crate::set_with_atoms::PartialAut;
 use super::helpers::*;
 #[derive(Clone)]
 #[derive(Hash)]
@@ -145,60 +145,6 @@ impl<X : Ord + Clone + Display> Display for Monomial<X> {
             to_view = to_view + "1";
         }
         write!(f,"{}",to_view)
-    }
-}
-
-impl<X : AtomsWithOrd + Ord + Clone + Display + Hash> ApplyPAut<X> for Monomial<X> {
-
-    fn apply_paut(&self, paut : &PartialAut<X>) -> Self {
-        if (self.domain().is_subset(&paut.domain())) {
-            Monomial {expo : compose_partial(&(paut.mappings), &(self.expo))}
-        }
-        else {
-            panic!("Partial automorphism is not defined on all of the variables of the monomial")
-        }
-    }
-}
-
-impl<X : AtomsWithOrd + Ord + Clone + Display + Hash + Copy> SetWithAtoms<X> for Monomial<X> {
-
-    fn tuples_in_same_orbit(first : Vec<Self>, second : Vec<Self>) -> bool
-        where
-            Self: Sized {
-        let first_varlist : Vec<BTreeSet<X>> = first.iter().map(|x| x.domain()).collect();
-        let first_vars = union_all(&first_varlist);
-
-        let second_varlist : Vec<BTreeSet<X>> = second.iter().map(|x| x.domain()).collect();
-        let second_vars = union_all(&second_varlist);
-
-        if X::sets_in_same_orbit(&first_vars,&second_vars) {
-            let paut = PartialAut::new(&first_vars, &second_vars);
-            let third : Vec<Monomial<X>> = first.iter().map(|x| x.apply_paut(&paut)).collect();
-            first == third
-        } else {
-            false
-        }
-    }
-
-    fn prod_orbit_rep(orbits: &Vec<Self>) -> 
-        Vec<Vec<Self>>
-        where
-            Self : Sized {
-                let varlist : Vec<BTreeSet<X>> = orbits.iter().map(|x| x.domain()).collect();
-                let vars = union_all(&varlist);
-                let vars_orbit_reps = X::orbit_reps(vars.len()).into_iter().filter(|x| X::sets_in_same_orbit(&vars, &x)).collect();
-
-                // not enough. We actually need tuples 
-                // first do the implementation for vectors. then monomials
-                // maybe we just need orbit rep for repeating tuples
-                // then (u_1,...,u_n) such that u_i is in the same orbit as v_i
-        
-    }
-
-    fn project_to_support(rep : Self, support : Vec<X>) -> Vec<Self>
-        where
-            Self : Sized {
-        
     }
 }
 
@@ -468,8 +414,14 @@ impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero, X : Hash + Ord + 
     }
 }
 
-// have to define partial aut and their applications
+impl<F : Clone, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
 
-// impl<F, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
+    fn apply_PAut(&self, paut : PartialAut<X>) -> Self
+        where
+            Self : Sized {
+                if self.domain().size
 
-// }
+
+                return self.clone();
+    }
+}

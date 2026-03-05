@@ -13,24 +13,9 @@ use mon::*;
 use crate::{atoms::AtomsWithOrd, dlo::DLO, helpers::count_between};
 
 fn main() {
-    let x: Polynomial<i8, String> = Polynomial::var(String::from("x"));
-    let y: Polynomial<i8, String> = Polynomial::var(String::from("y"));
-    let z: Polynomial<i8, String> = Polynomial::zero();
-    let i: Polynomial<i8, String> = Polynomial::constant(1);
-    let p: Polynomial<i8, String> = (x.clone() * x.clone()) + x.clone() + x.clone() + i.clone().pow(2) + z;
-    let q: Polynomial<i8, String> = (x.clone() + Polynomial::one()).pow(2);
-    println!("{}", p == q);
-    println!("{}",p);
-    println!("{}",p.leading_mon());
-    println!("{}",p.leading_coeff());
-    println!("{}",p.leading_term());
-    println!("{}",p.leading_mon().is_divisible_by(&p.leading_mon()));
-    println!("{}",p.clone().reduce_by(&i));
-    println!("{}",y.clone().is_reduced(&[x.clone()]));
-    println!("{}",(x.clone() + y.clone()).leading_mon());
-    println!("{}",p.clone().syzygy(&(y + x.clone())));
-    println!("{}",p.remainder(&[i]));
-    let nums = count_between::<i32>(BTreeSet::from([1, 3, 5,6,7]),BTreeSet::from([2,4]));
-    println!("{:?}", nums);
-    println!("{:?}",DLO::orbit_reps(2));
+    let d1 = DLO::new(Rational::from(1));
+    let d2 = DLO::new(Rational::from(2));
+    let x : Polynomial<i8,DLO> = Polynomial::var(d1);
+    let y : Polynomial<i8,DLO> = Polynomial::var(d2);
+    print!("{}",(y.clone() + x).reduce_by(&y));
 }
