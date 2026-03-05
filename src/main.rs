@@ -18,4 +18,5 @@ fn main() {
     let x : Polynomial<i8,DLO> = Polynomial::var(d1);
     let y : Polynomial<i8,DLO> = Polynomial::var(d2);
     print!("{}",(y.clone() + x).reduce_by(&y));
+    print!("{:?}",DLO::orbit_reps(3));
 }

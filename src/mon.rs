@@ -414,14 +414,14 @@ impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero, X : Hash + Ord + 
     }
 }
 
-impl<F : Clone, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
+// impl<F : Clone, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
 
-    fn apply_PAut(&self, paut : PartialAut<X>) -> Self
-        where
-            Self : Sized {
-                if self.domain().size
+//     fn apply_PAut(&self, paut : PartialAut<X>) -> Self
+//         where
+//             Self : Sized {
+//                 if self.domain().size
 
 
-                return self.clone();
-    }
-}
+//                 return self.clone();
+//     }
+// }

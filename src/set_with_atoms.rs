@@ -6,34 +6,36 @@ use super::atoms::*;
 use super::helpers::*;
 
 pub struct PartialAut<A> where A : AtomsWithOrd {
-    pub mappings : BTreeMap<A,A>
+    pub domain : Vec<A>,
+    pub range  : Vec<A>
 }
 
 impl<A : Hash + AtomsWithOrd + Clone + Copy> PartialAut<A> {
     // add a check that the map is a bijection
-    pub fn new(dom : &BTreeSet<A>, range : &BTreeSet<A>) -> Self {
-        if dom.len() != range.len() {
+    pub fn new(domain : &Vec<A>, range : &Vec<A>) -> Self {
+        if domain.len() != range.len() {
             panic!("dom and range must be of same length");
-        } else if !has_unique_elements(dom.clone()){
+        } else if !has_unique_elements(domain.clone()){
             panic!("dom must be a tuple of non-repeating elements");
         } else if !has_unique_elements(range.clone()) {
             panic!("range must be a tuple of non-repeating elements");
-        } else if !AtomsWithOrd::sets_in_same_orbit(dom, range) {
+        } else if !A::in_same_orbit(domain, range) {
             panic!("dom and range must be in the same orbit");
         }
         else {
-            PartialAut {mappings : map_from_sets_owned(dom,range)}
+            PartialAut {domain : domain.clone(), range : range.clone()}
         }
-    }
-
-    pub fn domain(&self) -> BTreeSet<A> {
-        self.mappings.keys().cloned().collect()
     }
 }
 
 pub trait ApplyPAut<A : AtomsWithOrd> {
     fn apply_paut(&self, paut : &PartialAut<A>) -> Self;
 }
+
+/*
+Since we mean to use it only for polynomials,
+we only work with equivariant orbits.
+*/
 pub trait SetWithAtoms<A : AtomsWithOrd> : ApplyPAut<A> {
     /*
     Checks if two tuples are in the same orbit
@@ -64,3 +66,7 @@ pub trait SetWithAtoms<A : AtomsWithOrd> : ApplyPAut<A> {
     where
         Self : Sized;
 }
+
+// impl SetWithAtoms<A : AtomsWithOrd> for Vec<A> {
+
+// }

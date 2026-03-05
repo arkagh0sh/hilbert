@@ -11,12 +11,20 @@
 
 use std::collections::BTreeSet;
 
+/*
+Since we mean to use it only for polynomials,
+we only work with equivariant orbits.
+*/
 pub trait AtomsWithOrd : Ord {
 
-    fn sets_in_same_orbit(first : &BTreeSet<Self>, second : &BTreeSet<Self>) -> bool
+    fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
     where
         Self: Sized;
     
+/*
+For this one we need repeating tuples also
+*/
+
     fn orbit_reps(n : usize) -> 
     Vec<Vec<Self>>
     where

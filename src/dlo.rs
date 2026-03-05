@@ -1,9 +1,5 @@
 use rug::Rational;
-<<<<<<< HEAD
-use std::{collections::BTreeSet, fmt::{Debug, Formatter, Result}};
-=======
-use std::{fmt::{Debug, Display, Formatter, Result}};
->>>>>>> 5854a52 (small changes)
+use std::{collections::BTreeSet, fmt::{Debug, Formatter, Result, Display}};
 use itertools::Itertools;
 use super::atoms::*;
 
@@ -38,30 +34,43 @@ impl Display for DLO {
  
 
 impl AtomsWithOrd for DLO {
-    fn sets_in_same_orbit(first : BTreeSet<Self>, second : BTreeSet<Self>) -> bool
+
+    fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
         where
             Self: Sized {
                 let n = first.len();
                 if n!= second.len() {
-                    return false
+                    false
                 } else {
                     let mut answer = true;
-                    for i in 1..n {
-                        for j in 1..n {
-                            answer = answer &&
-                            ((first[i] < first[j]) == (second[i] < second[j])) &&
-                            ((first[i] == first[j]) == (second[i] == second[j]));
+                    for i in 0..n {
+                        for j in 0..n {
+                            if ((first[i] == first[j]) != (second[i] == second[j])) || ((first[i] < first[j]) != (second[i] < second[j])) {
+                                answer = false
+                            }
                         }
                     }
-                    return answer;
+                    answer
                 }
     }
 
-    fn orbit_reps(n : u8) -> 
+    fn orbit_reps(n : usize) -> 
         Vec<Vec<Self>>
         where
             Self : Sized {
         let nums : Vec<DLO>= (1..(n+1)).map(|i| DLO::new(Rational::from(i))).collect();
-        return nums.iter().cloned().permutations(nums.len()).collect();
+
+        let all_rep : Vec<Vec<DLO>> = (0..n)
+        .map(|_| nums.iter().cloned())
+        .multi_cartesian_product()
+        .collect();
+
+        let mut unique_reps = Vec::new();
+        for rep in all_rep {
+            if !unique_reps.iter().any(|re| Self::in_same_orbit(re, &rep)) {
+                unique_reps.push(rep);
+            }
+        }
+        return unique_reps;
     }
 }
