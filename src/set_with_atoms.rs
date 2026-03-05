@@ -9,7 +9,7 @@ pub struct PartialAut<A> where A : AtomsWithOrd {
     pub mappings : BTreeMap<A,A>
 }
 
-impl<A : Hash + AtomsWithOrd + Clone> PartialAut<A> {
+impl<A : Hash + AtomsWithOrd + Clone + Copy> PartialAut<A> {
     // add a check that the map is a bijection
     pub fn new(dom : &BTreeSet<A>, range : &BTreeSet<A>) -> Self {
         if dom.len() != range.len() {
