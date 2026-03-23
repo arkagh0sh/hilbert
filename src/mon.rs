@@ -61,21 +61,9 @@ impl<X: Hash + Ord + Clone> Monomial<X> {
         Monomial { expo: new_expo }
     }
 
-    pub fn compare(&self, other : &Monomial<X>, support : &BTreeSet<X>) -> Ordering {
+    pub fn compare(&self, other : &Monomial<X>) -> Ordering {
         let vars = union(self.domain(),other.domain());
         for x in vars.into_iter().rev() {
-            if support.contains(&x) {
-                continue;
-            } else if self.exp_of(&x) < other.exp_of(&x) {
-                return Less;
-            } else if self.exp_of(&x) > other.exp_of(&x) {
-                return Greater;
-            } else {
-                continue;
-            }
-        }
-
-        for x in support.iter().rev() {
             if self.exp_of(&x) < other.exp_of(&x) {
                 return Less;
             } else if self.exp_of(&x) > other.exp_of(&x) {
@@ -83,7 +71,7 @@ impl<X: Hash + Ord + Clone> Monomial<X> {
             } else {
                 continue;
             }
-        } 
+        }
         return Equal;
     }
 }
@@ -226,32 +214,32 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
         answer
     }
 
-    pub fn leading_mon(&self, support : &BTreeSet<X>) -> Monomial<X> {
+    pub fn leading_mon(&self) -> Monomial<X> {
         let mut answer = Monomial::one();
         for (p,_c) in self.coeff.iter() {
-            if answer.compare(&p,support) == Less {
+            if answer.compare(&p) == Less {
                 answer = p.clone();
             }
         }
         answer
     }
 
-    pub fn leading_coeff(&self, support : &BTreeSet<X>) -> F {
-        let lm = self.leading_mon(support);
+    pub fn leading_coeff(&self) -> F {
+        let lm = self.leading_mon();
         self.coeff_of(&lm)
     }
 
-    pub fn leading_term(&self, support : &BTreeSet<X>) -> Polynomial<F,X> {
-        let lm = self.leading_mon(support);
+    pub fn leading_term(&self) -> Polynomial<F,X> {
+        let lm = self.leading_mon();
         let lc = self.coeff_of(&lm);
         Polynomial::new(vec![(lm,lc)])
     }
 
-    pub fn is_reducible_by(&self, other : &Polynomial<F,X>, support : &BTreeSet<X>) -> bool {
+    pub fn is_reducible_by(&self, other : &Polynomial<F,X>) -> bool {
         if self.is_zero() {
             false
         } else if other.domain().is_subset(&self.domain()) {
-            if self.leading_mon(support).is_divisible_by(&other.leading_mon(support)) {
+            if self.leading_mon().is_divisible_by(&other.leading_mon()) {
                 true
             } else {
                 false
@@ -261,12 +249,12 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
         }
     }
 
-    pub fn reduce_by(self, other : &Polynomial<F,X>, support : &BTreeSet<X>) -> Polynomial<F,X>
+    pub fn reduce_by(self, other : &Polynomial<F,X>) -> Polynomial<F,X>
     where
       F : Neg<Output = F>
     {
-        if  self.is_reducible_by(other, support) {
-            let quotient = self.leading_mon(support) / other.leading_mon(support);
+        if  self.is_reducible_by(other) {
+            let quotient = self.leading_mon() / other.leading_mon();
 
             match quotient {
                 None => self,
@@ -284,27 +272,27 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
     {
         let mut answer = true;
         for g in base {
-            if self.is_reducible_by(&g,support) {
+            if self.is_reducible_by(&g) {
                 answer = false;
             }
         }
         answer
     }
 
-    pub fn syzygy(self, other : &Polynomial<F,X>, support : &BTreeSet<X>) -> Polynomial<F,X>
+    pub fn syzygy(self, other : &Polynomial<F,X>) -> Polynomial<F,X>
     where
       F : Div<Output = F> + Neg<Output = F> + Sub
     {
-        let l = self.leading_mon(support).lcm(&other.leading_mon(support));
-        let a = l.clone() / self.leading_mon(support);
-        let b = l / other.leading_mon(support);
+        let l = self.leading_mon().lcm(&other.leading_mon());
+        let a = l.clone() / self.leading_mon();
+        let b = l / other.leading_mon();
         match a {
             Some(a1) => {
-                let a2 = Polynomial::new(vec![(a1,F::one()/self.leading_coeff(support))]);
+                let a2 = Polynomial::new(vec![(a1,F::one()/self.leading_coeff())]);
                 let f = a2 * self;
                 match b {
                     Some(b1) => {
-                        let b2 = Polynomial::new(vec![(b1,F::one()/other.leading_coeff(support))]);
+                        let b2 = Polynomial::new(vec![(b1,F::one()/other.leading_coeff())]);
                         let g = b2 * other.clone();
                         f - g
                     }
@@ -316,7 +304,7 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
         }
     }
 
-    pub fn remainder(self, base : &[Polynomial<F,X>], support : &BTreeSet<X>) -> Polynomial<F,X>
+    pub fn remainder(self, base : &[Polynomial<F,X>]) -> Polynomial<F,X>
     where
       F : Neg<Output = F> + Display,
       X : Display
@@ -326,7 +314,7 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
         while pre != post {
             pre = post.clone();
             for g in base {
-                post = post.reduce_by(g, support);
+                post = post.reduce_by(g);
                 println!("{}",post);
             }
         }

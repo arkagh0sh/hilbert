@@ -58,14 +58,18 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone> : Eq {
     Vec<Vec<Self>>
     where
         Self : Sized {
+
             let support_list : Vec<Vec<A>> = orbits.iter().map(|x| x.support()).collect();
+
             let support_len_list : Vec<usize> = orbits.iter().map(|x| x.support().len()).collect();
-            let all_rep : Vec<Vec<A>> = A::orbit_reps(support_len_list.iter().sum());
+
+            let all_rep : Vec<Vec<A>> = A::orbit_reps(support_len_list.clone().iter().sum());
+
             let all_rep_split : Vec<Vec<Vec<A>>> = all_rep.into_iter().map(|inner_vec| {
                 let mut sub_vectors = Vec::new();
                 let mut current_slice = &inner_vec[..];
                 
-                for len in support_len_list {
+                for len in support_len_list.clone() {
                     if current_slice.len() >= len {
                         let (first, second) = current_slice.split_at(len);
                         sub_vectors.push(first.to_vec());

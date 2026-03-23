@@ -72,14 +72,5 @@ impl AtomsWithOrd for DLO {
             }
         }
         return unique_reps;
-impl PartialEq for DLO {
-    fn eq(&self, other: &Self) -> bool {
-        self.val == other.val
-    }
-}
-
-impl PartialOrd for DLO {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.val.cmp(&other.val))
     }
 }
