@@ -30,3 +30,19 @@ For this one we need repeating tuples also
     where
         Self : Sized;
 }
+
+
+/*
+  atoms to add
+    1. Equality
+    2. Ordered
+    3. Bit-vectors
+    4. Dense-tree
+    5. Rado graph
+    6. Ordered Rado
+    7. Homogenous (as a subtrait)
+    8. Finite sets
+    9. Products
+    10. Finitely supported (atoms where some values are fixed as constants)
+    11. Nesting of atoms
+*/

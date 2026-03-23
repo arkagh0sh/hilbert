@@ -11,6 +11,7 @@ use crate::atoms::AtomsWithOrd;
 use crate::set_with_atoms::SetWithAtoms;
 use crate::set_with_atoms::PartialAut;
 use super::helpers::*;
+
 #[derive(Clone)]
 #[derive(Hash)]
 pub struct Monomial<X> where X : Ord + Clone {
