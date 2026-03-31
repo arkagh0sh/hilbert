@@ -1,6 +1,8 @@
 use rug::Rational;
 use std::{collections::BTreeSet, fmt::{Debug, Formatter, Result, Display}};
 use itertools::Itertools;
+use crate::set_with_atoms::SetWithAtoms;
+
 use super::atoms::*;
 
 #[derive(Clone)]
@@ -73,4 +75,12 @@ impl AtomsWithOrd for DLO {
         }
         return unique_reps;
     }
+}
+
+impl SetWithAtoms<DLO> for Vec<DLO> {
+
+    fn support(&self) -> Vec<DLO> {
+        self.clone().into_iter().collect()
+    }
+
 }

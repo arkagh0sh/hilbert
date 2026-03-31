@@ -32,7 +32,7 @@ impl<A : Hash + AtomsWithOrd + Clone + Copy> PartialAut<A> {
 Since we mean to use it only for polynomials,
 we only work with equivariant orbits.
 */
-pub trait SetWithAtoms<A : AtomsWithOrd + Clone> : Eq {
+pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash + Copy> : Eq {
 
     // Applies a partial automorphism to an element
     fn apply_paut(&self, paut : PartialAut<A>) -> Self
@@ -84,7 +84,15 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone> : Eq {
 
                 let required_reps_split : Vec<Vec<Vec<A>>> = all_rep_split.into_iter().filter(|x| are_pointwise_equivalent(x, &support_list, A::in_same_orbit)).collect();
 
-                return Vec::new();
+                let product_rep_list : Vec<Vec<Self>> =
+                    required_reps_split.into_iter().map(|sup_list| {
+                        sup_list.into_iter().zip(orbits.iter())
+                        .map(|(sup,orb_rep)| orb_rep.apply_paut(PartialAut::new(&orb_rep.support(), &sup)))
+                        .collect()
+                    }).collect();
+   
+
+                return product_rep_list;
             }
 
     /*
