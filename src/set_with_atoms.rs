@@ -4,13 +4,18 @@ use std::clone::Clone;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use super::atoms::*;
 use super::helpers::*;
+use itertools::Itertools;
 
-pub struct PartialAut<A> where A : AtomsWithOrd {
+#[derive(Debug, Hash, Clone)]
+pub struct PartialAut<A> where A : AtomsWithOrd + Clone {
+
+// should be BTreeSets 
+
     pub domain : Vec<A>,
     pub range  : Vec<A>
 }
 
-impl<A : Hash + AtomsWithOrd + Clone + Copy> PartialAut<A> {
+impl<A : Hash + AtomsWithOrd + Clone> PartialAut<A> {
     // add a check that the map is a bijection
     pub fn new(domain : &Vec<A>, range : &Vec<A>) -> Self {
         if domain.len() != range.len() {
@@ -32,7 +37,7 @@ impl<A : Hash + AtomsWithOrd + Clone + Copy> PartialAut<A> {
 Since we mean to use it only for polynomials,
 we only work with equivariant orbits.
 */
-pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash + Copy> : Eq {
+pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
 
     // Applies a partial automorphism to an element
     fn apply_paut(&self, paut : PartialAut<A>) -> Self
@@ -48,7 +53,33 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash + Copy> : Eq {
 
     fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
     where
-        Self: Sized;
+        Self: Sized {
+            let first_sup = first.into_iter()
+                .map(|elem| elem.support())
+                .into_iter()
+                .flatten()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect();
+
+            let second_sup = second.into_iter()
+                .map(|elem| elem.support())
+                .flatten()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect();
+
+            if A::in_same_orbit(&first_sup,&second_sup) {
+                let paut = PartialAut::new(&first_sup,&second_sup);
+                let shifted_first : Vec<Self> = first
+                    .into_iter()
+                    .map(|elem| elem.apply_paut(paut.clone())).collect();
+                     // use paut without cloning
+                shifted_first == *second
+            } else {
+                false
+            }
+        }
     
     /*
     Given a list of representatives of orbits, output a list of representatives of the product of the orbits
@@ -102,6 +133,15 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash + Copy> : Eq {
 
     fn project_to_support(rep : &Self, support : &Vec<A>) -> Vec<Self>
     where
-        Self : Sized;
+        Self : Sized {
+            let sup_len = rep.support().len();
+            let support_set : BTreeSet<A> = support.clone().into_iter().collect();
+            let sup_list : Vec<Vec<A>> = support_set
+                .into_iter()
+                .combinations(sup_len)
+                .collect();
 
+            // to be continued
+            return Vec::new();
+        }
 }

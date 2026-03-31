@@ -1,7 +1,7 @@
 use rug::Rational;
-use std::{collections::BTreeSet, fmt::{Debug, Formatter, Result, Display}};
+use std::{collections::{BTreeSet,BTreeMap} , fmt::{Debug, Formatter, Result, Display}};
 use itertools::Itertools;
-use crate::set_with_atoms::SetWithAtoms;
+use crate::set_with_atoms::{SetWithAtoms, PartialAut};
 
 use super::atoms::*;
 
@@ -77,10 +77,21 @@ impl AtomsWithOrd for DLO {
     }
 }
 
-impl SetWithAtoms<DLO> for Vec<DLO> {
+impl SetWithAtoms<DLO> for BTreeSet<DLO> {
 
     fn support(&self) -> Vec<DLO> {
         self.clone().into_iter().collect()
     }
 
+    fn apply_paut(&self, paut : PartialAut<DLO>) -> Self
+        where
+            Self : Sized {
+                let mappings: BTreeMap<_, _> = paut.domain.into_iter().zip(paut.range.into_iter()).collect();
+
+                self.clone()
+                .into_iter()
+                .filter_map(|key| mappings.get(&key))
+                .cloned() // Copy or Clone the value out of the map
+                .collect() 
+    }
 }
