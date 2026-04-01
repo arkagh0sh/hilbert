@@ -2,7 +2,7 @@ use std::hash::Hash;
 use std::clone::Clone;
 use std::cmp::{Eq, Ord, Ordering, Ordering::{Equal, Less, Greater}, max};
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{Display, Formatter, Result, Debug};
 use std::ops::{Add, AddAssign, Mul, Sub, Neg, Div};
 use num_traits::{Zero, Pow, ConstOne};
 use num_traits::identities::One;
@@ -90,7 +90,7 @@ impl<X : Hash + Ord + Clone> PartialOrd for  Monomial<X>{
     }
 }
 
-// We use the co-lex order (and NOT the revlex order)
+// We use the revlex order
 
 impl<X : Hash + Ord + Clone> Ord for Monomial<X> {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -118,18 +118,18 @@ impl<X : Clone + Ord + Hash> Mul for Monomial<X> {
 
 impl<X : Clone + Ord + Hash> Div for Monomial<X> {
 
-    type Output = Option<Self>;
+    type Output = Self;
 
-    fn div(self, rhs: Self) -> Option<Self> {
+    fn div(self, rhs: Self) -> Self {
         if !(self.is_divisible_by(&rhs)) {
-            None
+            panic!("You did not check divisivility before dividing!")
         } else {
             let mut result = BTreeMap::new();
             for (x, v1) in self.expo.iter() {
                 let new_val = v1 - rhs.exp_of(x);
                 result.insert(x.clone(),new_val);
             }
-            Some(Monomial {expo : result})
+            Monomial {expo : result}
         }
     }
 }
@@ -145,6 +145,21 @@ impl<X : Clone + Ord + Hash> Pow<u8> for Monomial<X> {
     fn pow(self, rhs: u8) -> Self::Output {
         let new_expo: BTreeMap<X, u8> = self.expo.iter().map(|(k, v)| (k.clone(), v.clone() * rhs.clone())).collect();
         Monomial {expo : new_expo}
+    }
+}
+
+impl<X : Ord + Clone + Display> Debug for Monomial<X> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let mut to_view : String = String::new();
+        for (x,n) in self.expo.iter() {
+            to_view = to_view + &x.to_string() + "^" + &n.to_string() + " ";
+        }
+        if !(self.expo.is_empty()) {
+            to_view = String::from("( ") + &to_view + ")";
+        } else {
+            to_view = to_view + "1";
+        }
+        write!(f,"{}",to_view)
     }
 }
 
@@ -414,6 +429,25 @@ impl<F : Display, X : Hash + Ord + Clone + Display> Display for Polynomial<F,X> 
     }
 }
 
+impl<F : Display, X : Hash + Ord + Clone + Display> Debug for Polynomial<F,X> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let mut to_view : String = String::new();
+        for (p,c) in self.coeff.iter() {
+            if *p == Monomial::one() {
+                to_view = to_view + "+ " + &c.to_string() + " ";
+            } else {
+                to_view = to_view + "+ " + &c.to_string() + "." + &p.to_string() + " ";
+            }
+        }
+        
+        if self.coeff.is_empty() {
+            to_view = String::from("0");
+        }
+
+        write!(f,"{}",to_view)
+    }
+}
+
 impl<F : Neg<Output = F> + Clone, X : Hash + Ord + Clone> Neg for Polynomial<F,X> {
 
     type Output = Self;
@@ -433,6 +467,7 @@ impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero, X : Hash + Ord + 
         self + other.neg()
     }
 }
+
 
 // impl<F : Clone, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
 
