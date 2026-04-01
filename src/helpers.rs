@@ -175,3 +175,8 @@ where
          .zip(vec_b.iter())
          .all(|(a, b)| relation(a, b))
 }
+
+pub fn is_subvec<A : Hash + Eq>(subset: &Vec<A>, superset: &Vec<A>) -> bool {
+    let set: HashSet<_> = superset.iter().collect();
+    subset.iter().all(|item| set.contains(item))
+}

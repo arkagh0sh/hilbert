@@ -3,7 +3,7 @@ use std::{collections::{BTreeSet,BTreeMap} , fmt::{Debug, Formatter, Result, Dis
 use itertools::Itertools;
 use crate::set_with_atoms::{SetWithAtoms, PartialAut};
 
-use super::atoms::*;
+use super::{atoms::*, helpers::*};
 
 #[derive(Clone)]
 #[derive(Hash)]
@@ -86,7 +86,13 @@ impl SetWithAtoms<DLO> for BTreeSet<DLO> {
     fn apply_paut(&self, paut : PartialAut<DLO>) -> Self
         where
             Self : Sized {
-                let mappings: BTreeMap<_, _> = paut.domain.into_iter().zip(paut.range.into_iter()).collect();
+                let mappings: BTreeMap<_, _> = paut.domain.clone().into_iter().zip(paut.range.into_iter()).collect();
+
+                // maybe support should be calculated after initialisation to make it faster
+                if !is_subvec(&self.support(), &paut.domain) {
+                    panic!("Domain of PartialAut must be a superset of the support of the element")
+                }
+
 
                 self.clone()
                 .into_iter()

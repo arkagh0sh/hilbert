@@ -9,7 +9,9 @@ use itertools::Itertools;
 #[derive(Debug, Hash, Clone)]
 pub struct PartialAut<A> where A : AtomsWithOrd + Clone {
 
-// should be BTreeSets 
+// should be BTreeSets
+// actually have domain, range and maps.
+// redundancy helps! 
 
     pub domain : Vec<A>,
     pub range  : Vec<A>
@@ -47,10 +49,7 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
     //Gives the support of an element.
     fn support(&self) -> Vec<A>;
 
-    /*
-    Checks if two tuples are in the same orbit
-    */
-
+    // Checks if two tuples are in the same orbit
     fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
     where
         Self: Sized {
@@ -81,10 +80,7 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
             }
         }
     
-    /*
-    Given a list of representatives of orbits, output a list of representatives of the product of the orbits
-    */
-
+    //Given a list of representatives of orbits, output a list of representatives of the product of the orbits
     fn prod_orbit_rep(orbits : &Vec<Self>) -> 
     Vec<Vec<Self>>
     where
@@ -134,14 +130,15 @@ pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
     fn project_to_support(rep : &Self, support : &Vec<A>) -> Vec<Self>
     where
         Self : Sized {
-            let sup_len = rep.support().len();
+            let rep_supp = rep.support();
+            let sup_len = rep_supp.len();
             let support_set : BTreeSet<A> = support.clone().into_iter().collect();
             let sup_list : Vec<Vec<A>> = support_set
                 .into_iter()
                 .combinations(sup_len)
                 .collect();
+            let good_sup_list : Vec<Vec<A>> = sup_list.into_iter().filter(|elem| A::in_same_orbit(&rep_supp, elem)).collect();
 
-            // to be continued
-            return Vec::new();
+            good_sup_list.into_iter().map(|supp| rep.apply_paut(PartialAut::new(&rep_supp, &supp))).collect()
         }
 }
