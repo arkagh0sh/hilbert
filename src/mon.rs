@@ -6,10 +6,6 @@ use std::fmt::{Display, Formatter, Result, Debug};
 use std::ops::{Add, AddAssign, Mul, Sub, Neg, Div};
 use num_traits::{Zero, Pow, ConstOne};
 use num_traits::identities::One;
-
-use crate::atoms::AtomsWithOrd;
-use crate::set_with_atoms::SetWithAtoms;
-use crate::set_with_atoms::PartialAut;
 use super::helpers::*;
 
 #[derive(Clone)]
@@ -269,14 +265,10 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
       F : Neg<Output = F>
     {
         if  self.is_reducible_by(other) {
-            let quotient = self.leading_mon() / other.leading_mon();
-
-            match quotient {
-                None => self,
-                Some(p) => self - Polynomial::from_mon(p) * other.clone()
-            }
+            let quotient: Polynomial<F,X> = Polynomial::from_mon(self.leading_mon() / other.leading_mon());
+            return (self - quotient * other.clone());
         } else {
-            self
+            return self;
         }
     }
 
@@ -301,25 +293,14 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
         let l = self.leading_mon().lcm(&other.leading_mon());
         let a = l.clone() / self.leading_mon();
         let b = l / other.leading_mon();
-        match a {
-            Some(a1) => {
-                let a2 = Polynomial::new(vec![(a1,F::one()/self.leading_coeff())]);
-                let f = a2 * self;
-                match b {
-                    Some(b1) => {
-                        let b2 = Polynomial::new(vec![(b1,F::one()/other.leading_coeff())]);
-                        let g = b2 * other.clone();
-                        f - g
-                    }
-                    None => panic!("Error in syzygy. Probably problem with lcm")
-                }
-            }
-
-            None => panic!("Error in syzygy. Probably problem with lcm")
-        }
+        let a2 = Polynomial::new(vec![(a,F::one()/self.leading_coeff())]);
+        let f = a2 * self;
+        let b2 = Polynomial::new(vec![(b,F::one()/other.leading_coeff())]);
+        let g = b2 * other.clone();
+        f - g
     }
 
-    pub fn remainder(self, base : &[Polynomial<F,X>]) -> Polynomial<F,X>
+    pub fn remainder(self, reducers : &Vec<Polynomial<F,X>>) -> Polynomial<F,X>
     where
       F : Neg<Output = F> + Display,
       X : Display
@@ -327,11 +308,10 @@ impl<F : AddAssign + Default + Eq + Zero + ConstOne + Clone, X : Hash + Ord + Cl
         let mut post = self;
         let mut pre = Polynomial::zero();
         while pre != post {
-            pre = post.clone();
-            for g in base {
-                post = post.reduce_by(g);
-                println!("{}",post);
-            }
+            for reducer in reducers.iter() {
+                pre = post.clone();
+                post = post.reduce_by(reducer);
+            }  
         }
         post
     }
@@ -468,6 +448,28 @@ impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero, X : Hash + Ord + 
     }
 }
 
+impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero + Ord + ConstOne, X : Hash + Ord + Clone> PartialOrd for Polynomial<F,X> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let dif = find_biggest_diff_key(&self.coeff, &other.coeff);
+       match dif {
+            None => Some(Equal),
+            Some(x) => if self.coeff_of(&x) < other.coeff_of(&x) {
+                Some(Less)
+            } else {
+                Some(Greater)
+            }
+        }
+    }
+}
+
+impl<F : Neg<Output = F> + Clone + AddAssign + Default + Zero + Ord + ConstOne, X : Hash + Ord + Clone> Ord for Polynomial<F,X> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.partial_cmp(other) {
+            Some(a) => a,
+            None => panic!("The ordering is supposed to be total")
+        }
+    }
+}
 
 // impl<F : Clone, X:AtomsWithOrd + Hash + Clone> SetWithAtoms<X> for Polynomial<F,X> {
 
