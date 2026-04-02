@@ -1,8 +1,3 @@
----
-math: true
-footnotes: true
----
-
 # Oligo-poly
 
 ## A library for working with polynomial rings under oligomorphic group actions.
