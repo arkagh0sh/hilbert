@@ -1,24 +1,43 @@
 use rug::Rational;
 use std::{collections::{BTreeSet,BTreeMap} , fmt::{Debug, Formatter, Result, Display}};
 use itertools::Itertools;
-use crate::set_with_atoms::{SetWithAtoms, PartialAut};
+use crate::elements_with_atoms::{ElementsWithAtoms, PartialAut};
+use contracts::post;
 
 use super::{atoms::*, helpers::*};
+
+
+// the trait for dense linear order without endpoints
+pub trait DLO : Ord {
+
+    #[post(lower < ret)]
+    #[post(upper > ret)]
+    fn find_between(lower : Self, upper : Self) -> Self;
+
+    // just to ensure that the set is non empty
+    fn an_elem() -> Self;
+
+    #[post(lower < ret)]
+    fn bigger(lower : Self) -> Self;
+
+    #[post(upper > ret)]
+    fn smaller(upper : Self) -> Self;
+}
 
 #[derive(Clone)]
 #[derive(Hash)]
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct DLO {
+pub struct DLO_var {
     val : Rational
 }
 
-impl DLO {
-    pub fn new(q : Rational) -> DLO {
-        DLO {val : q}
+impl DLO_var {
+    pub fn new(q : Rational) -> DLO_var {
+        DLO_var {val : q}
     }
 }
 
-impl Debug for DLO {
+impl Debug for DLO_var {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut to_view : String = String::new();
         to_view = to_view + "d(" + &self.val.to_string() + ")";
@@ -26,7 +45,7 @@ impl Debug for DLO {
     }
 }
 
-impl Display for DLO {
+impl Display for DLO_var {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut to_view : String = String::new();
         to_view = to_view + "d(" + &self.val.to_string() + ")";
@@ -35,7 +54,7 @@ impl Display for DLO {
 }
  
 
-impl AtomsWithOrd for DLO {
+impl <X : DLO> AtomsWithOrd for X    {
 
     fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
         where
@@ -60,7 +79,8 @@ impl AtomsWithOrd for DLO {
         Vec<Vec<Self>>
         where
             Self : Sized {
-        let nums : Vec<DLO>= (1..(n+1)).map(|i| DLO::new(Rational::from(i))).collect();
+        // needs to be fixed
+        let nums : Vec<Self>= (1..(n+1)).map(|i| DLO::new(Rational::from(i))).collect();
 
         let all_rep : Vec<Vec<DLO>> = (0..n)
         .map(|_| nums.iter().cloned())
@@ -77,7 +97,7 @@ impl AtomsWithOrd for DLO {
     }
 }
 
-impl SetWithAtoms<DLO> for BTreeSet<DLO> {
+impl ElementsWithAtoms<DLO> for BTreeSet<DLO> {
 
     fn support(&self) -> Vec<DLO> {
         self.clone().into_iter().collect()

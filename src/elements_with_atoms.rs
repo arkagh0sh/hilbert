@@ -39,7 +39,7 @@ impl<A : Hash + AtomsWithOrd + Clone> PartialAut<A> {
 Since we mean to use it only for polynomials,
 we only work with equivariant orbits.
 */
-pub trait SetWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
+pub trait ElementsWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
 
     // Applies a partial automorphism to an element
     fn apply_paut(&self, paut : PartialAut<A>) -> Self

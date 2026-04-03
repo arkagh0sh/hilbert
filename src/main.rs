@@ -3,7 +3,7 @@ mod ideal;
 mod helpers;
 mod atoms;
 mod dlo;
-mod set_with_atoms;
+mod elements_with_atoms;
 mod bits;
 use rug::Rational;
 
@@ -14,7 +14,7 @@ use mon::*;
 use bits::*;
 
 use crate::{
-    atoms::AtomsWithOrd, dlo::DLO, helpers::count_between, ideal::buchberger, set_with_atoms::{PartialAut, SetWithAtoms}
+    atoms::AtomsWithOrd, dlo::DLO, helpers::count_between, ideal::buchberger, elements_with_atoms::{PartialAut, ElementsWithAtoms}
 };
 
 fn main() {

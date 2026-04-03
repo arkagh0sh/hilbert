@@ -1,0 +1,108 @@
+\documentclass[12pt,nonacm]{article}
+%
+\usepackage{amsmath,amssymb}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{mathpazo}
+\title{Oligo-poly\\
+\large
+A library for working with polynomial rings under oligomorphic group actions.}
+%
+\author{Arka Ghosh}
+%
+\newcommand{\struct}{\mathcal{X}}
+\newcommand{\dloQ}{\mathcal{Q}}
+
+\newcommand{\aut}[1]{\mathsf{Aut}\left(#1\right\right)}
+\newcommand{\poly}[2]{#1[#2]}
+
+\newcommand{\emphdef}[1]{\textcolor{BrickRed}{#1}}
+%
+\newtheorem{theorem}{Theorem}
+\newtheorem{example}[theorem]{Example}
+%
+\begin{document}
+\maketitle
+%
+The most recent version of this document can be found at...
+
+The purpose of this library is to implement (in Rust) the equivariant Buchberger algorithm given in \cite{GL25}.
+
+We assume that the reader is .....
+%
+\paragraph*{Structure of this document}
+
+%
+\section{Theoretical background}
+%
+
+\subsection{Relational structures}
+%
+A \emphdef{relational structure} $\struct = (X,R_1,\dots,R_n)$ consists of a
+set $X$ (called the \emphdef{domain} of the relational structure) and relations $R_i$ defined on the set $X$.
+%
+\begin{example}
+Let $Q$ be the set of rational numbers.
+We can consider the structure $\dloQ = (Q,<)$ where is $<$ the usual ordering.
+\end{example}
+%
+\begin{example}
+A graph $\mathcal{G} = (V,E)$ is another example of a relational structure,
+with the set $V$ of vertices being the domain and the edge relation $E$ being the only relation.
+\end{example}
+
+By abuse of notation we sometime use $\mathcal{X}$ to denote the set underlying $X$.
+For instance,
+we write $\bar{x}\in\struct^n$ to mean that $x$ is an element of $X^n$.
+
+\subsection{Automorphism groups}
+
+An \emphdef{automorphism} of the relational structure $\struct$ is a bijection from $\struct$ to itself that preserves and reflects the structure.
+%
+\begin{example}
+An automorphism of $\dloQ$ is an order preserving bijection from $\mathcal{Q}$ to itself.
+\end{example}
+%
+\begin{example}
+If $\struct$ is a graph,
+then an automorphism of $\mathcal{X}$ is an isomorphism of the graph with itself.
+\end{example}
+%
+The set of automorphisms of a relational structure $\mathcal{X}$ is denoted as \emphdef{$\mathbf{Aut}(\mathcal{X})$}.
+%
+\subsection{Equivariant Ideals}
+%
+For a relational structure $\mathcal{X}$,
+we use $\mathbb{Q}[\mathcal{X}]$ to denote the polynomial ring whose variables are elements of $\mathcal{X}$.
+
+Instead of using $\mathcal{X}$ as the set of variables some articles use variables $a_{x}$ indexed by elements $x\in\mathcal{X}$.
+But using $\mathcal{X}$ itself makes the notation simpler.
+
+The group $\mathbf{Aut}(\mathcal{X})$ of automorphisms of $\mathcal{X}$ acts on $\mathbb{Q}[\mathcal{X}]$ in a variable-wise manner.
+For instance, for $\pi\in\mathbf{Aut}(\mathcal{X})$ and $x,y\in\mathcal{X}$
+$$\pi(x^2 - 2xy^2 + 3) =
+\pi(x)^2 - 2\pi(x)\pi(y)^2 + 3\ .$$
+
+An ideal in 
+
+\subsection{Equivariant Gröbner bases}
+
+\subsection{Equivariant Buchberger algorithm}
+
+\section{How to use}
+
+\subsection{Relational structures}
+
+\subsection{Pre-defined relational structures}
+
+\paragraph{Dense linear order without endpoints}
+
+\subsection{Defining new relational structures}
+
+\begin{thebibliography}{9}
+\bibitem{GL25}
+Arka Ghosh and Aliaume Lopez. Computability of equivariant
+Gr\"{o}bner bases, 2025.
+
+\end{thebibliography}
+%
+\end{document}
