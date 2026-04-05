@@ -2,7 +2,7 @@ use rug::Rational;
 use std::{collections::{BTreeSet,BTreeMap} , fmt::{Debug, Formatter, Result, Display}};
 use itertools::Itertools;
 use crate::elements_with_atoms::{ElementsWithAtoms, PartialAut};
-use contracts::post;
+use contracts::{pre, post};
 
 use super::{atoms::*, helpers::*};
 
@@ -10,6 +10,7 @@ use super::{atoms::*, helpers::*};
 // the trait for dense linear order without endpoints
 pub trait DLO : Ord {
 
+    #[pre(lower < upper)]
     #[post(lower < ret)]
     #[post(upper > ret)]
     fn find_between(lower : Self, upper : Self) -> Self;
@@ -23,6 +24,25 @@ pub trait DLO : Ord {
     #[post(upper > ret)]
     fn smaller(upper : Self) -> Self;
 }
+
+impl DLO for Rational {
+   fn an_elem() -> Self {
+       Rational::from(0)
+   }
+
+   fn bigger(lower : Self) -> Self {
+       lower + 1
+   }
+
+   fn smaller(upper : Self) -> Self {
+       upper - 1
+   }
+
+   fn find_between(lower : Self, upper : Self) -> Self {
+       (lower + upper)/1
+   }
+}
+
 
 #[derive(Clone)]
 #[derive(Hash)]

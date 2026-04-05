@@ -1,41 +1,74 @@
-\documentclass[12pt,nonacm]{article}
+\documentclass[10pt,a4paper]{memoir}
 %
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{cleveref}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{mathpazo}
+\usepackage[T1]{fontenc}
+\linespread{1.05}
+\date{}
 \title{Oligo-poly\\
+\vspace{10pt}
 \large
-A library for working with polynomial rings under oligomorphic group actions.}
+A library for working with polynomial rings under oligomorphic group actions.
+$ $\\}
 %
 \author{Arka Ghosh}
 %
 \newcommand{\struct}{\mathcal{X}}
 \newcommand{\dloQ}{\mathcal{Q}}
+\newcommand{\ordZ}{\mathcal{Z}}
 
-\newcommand{\aut}[1]{\mathsf{Aut}\left(#1\right\right)}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\F}{\mathbb{F}}
+
+\newcommand{\aut}[1]{\mathsf{Aut}\left(#1\right)}
 \newcommand{\poly}[2]{#1[#2]}
+\newcommand{\setof}[2]{\left\{#1\ \mid\ #2 \right\}}
+\newcommand{\idGen}[1]{\langle#1\rangle}
+\newcommand{\eqIdGen}[1]{\langle#1\rangle_{\textnormal{eqv}}}
 
-\newcommand{\emphdef}[1]{\textcolor{BrickRed}{#1}}
-%
+\newcommand{\arka}[1]{\textcolor{red}{Arka:#1}}
+\newcommand{\emphdef}[1]{\emph{\textcolor{BrickRed}{#1}}}
+\newcommand{\code}[1]{\texttt{\textcolor{magenta}{#1}}}
+
 \newtheorem{theorem}{Theorem}
+
+\theoremstyle{definition}
 \newtheorem{example}[theorem]{Example}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{todo}[theorem]{Todo}
 %
 \begin{document}
 \maketitle
+\raggedbottom
 %
-The most recent version of this document can be found at...
-
+\pagebreak
+\tableofcontents
+%
+\pagebreak
+\noindent
+The reader is suggested to look at the most recent version of this document which can be found in the url below.
+\[
+\text{
+\url{https://github.com/arkagh0sh/hilbert}
+}
+\]
 The purpose of this library is to implement (in Rust) the equivariant Buchberger algorithm given in \cite{GL25}.
-
-We assume that the reader is .....
+This document is mostly self-complete in terms of definitions.
 %
 \paragraph*{Structure of this document}
-
 %
-\section{Theoretical background}
+We start with explaining the theoretical background in \Cref{sec:theory}.
+%\Cref{sec:how} gives basic instructions for using this library.
+\Cref{sec:impl} describes the important aspects of our implementation and gives basic instructions for usage.
+%
+\chapter{Theoretical background}\label{sec:theory}
 %
 
-\subsection{Relational structures}
+\section{Relational structures}
 %
 A \emphdef{relational structure} $\struct = (X,R_1,\dots,R_n)$ consists of a
 set $X$ (called the \emphdef{domain} of the relational structure) and relations $R_i$ defined on the set $X$.
@@ -50,11 +83,11 @@ A graph $\mathcal{G} = (V,E)$ is another example of a relational structure,
 with the set $V$ of vertices being the domain and the edge relation $E$ being the only relation.
 \end{example}
 
-By abuse of notation we sometime use $\mathcal{X}$ to denote the set underlying $X$.
+By abuse of notation we sometime use $\struct$ to denote the set underlying $X$.
 For instance,
-we write $\bar{x}\in\struct^n$ to mean that $x$ is an element of $X^n$.
+we write $x \in\struct^n$ to mean that $x$ is an element of $X^n$.
 
-\subsection{Automorphism groups}
+\section{Automorphism groups}
 
 An \emphdef{automorphism} of the relational structure $\struct$ is a bijection from $\struct$ to itself that preserves and reflects the structure.
 %
@@ -64,45 +97,242 @@ An automorphism of $\dloQ$ is an order preserving bijection from $\mathcal{Q}$ t
 %
 \begin{example}
 If $\struct$ is a graph,
-then an automorphism of $\mathcal{X}$ is an isomorphism of the graph with itself.
+then an automorphism of $\struct$ is an isomorphism of the graph with itself.
 \end{example}
 %
-The set of automorphisms of a relational structure $\mathcal{X}$ is denoted as \emphdef{$\mathbf{Aut}(\mathcal{X})$}.
+The set of automorphisms of a relational structure $\struct$ is denoted as \emphdef{$\mathbf{Aut}(\struct)$}.
 %
-\subsection{Equivariant Ideals}
+\section{Oligomorphic structures}
 %
-For a relational structure $\mathcal{X}$,
-we use $\mathbb{Q}[\mathcal{X}]$ to denote the polynomial ring whose variables are elements of $\mathcal{X}$.
+A relational structure $\struct^n$ is called \emphdef{oligomorphic} if for every $n\in\N$,
+the set $\struct^n$ splits into finite many orbits.
+%
+\begin{example}
+The structure $\dloQ$ is oligomorphic.
+For illustration, for $n = 2$, $\dloQ^2$ splits into three orbits
+\[
+\setof{(a,b)\in\dloQ^2}{a < b},
+\setof{(a,b)\in\dloQ^2}{a = b}
+\text{ and }
+\setof{(a,b)\in\dloQ^2}{a > b} \ .
+\]
+\end{example}
+%
+\begin{example}
+The structure $\ordZ = (Z,<)$ of integers with order is not oligomorphic.
+For instance,
+the set $\ordZ^2$ splits into infinite many orbits of the form
+\[
+\setof{(a,b)}{a - b = d}
+\]
+for $d\in Z$.
+\end{example}
+%
+\section{Polynomial ideals}
+%
+We use $\poly{\F}{X}$ to denote the polynomial rings with coefficients from the field $\F$ and variables from the set $X$.
+A subset $J$ of polynomials is called an \emphdef{ideal} if
+\begin{enumerate}
+\item the zero polynomial $0$ is inside $J$,
+\item the sum $f + g$ of any two polynomials $f$ and $g$ inside $J$ is also inside $J$, and
+\item the product $h\cdot f$ of any polynomial $h$ in the ring $\poly{\F}{X}$ with any polynomial $f\in J$ is also in $J$.
+\end{enumerate}
+%
+\begin{notation}
+For a function $\alpha : X\to \F$ and $f\in\poly{\F}{X}$ let $f(\alpha)$ denote the instantiation of $f$ at $\alpha$.
+For instance, if $f = x^2 - y$, $\alpha(x) = 1$ and $\alpha(y) = 1.5$,
+then $f = -0.5$.
+\end{notation}
+%
+\begin{example}
+For any subset $S\subseteq X\to \F$,
+the set $\setof{f\in\poly{\F}{X}}{f(\alpha) = 0\text{ for all }\alpha\in S}$ is an ideal inside $\poly{\F}{X}$.
+\end{example}
+%
+\section{Equivariant ideals}
+%
+For a relational structure $\struct$,
+we use $\mathbb{Q}[\struct]$ to denote the polynomial ring whose variables are elements of $\struct$.
 
-Instead of using $\mathcal{X}$ as the set of variables some articles use variables $a_{x}$ indexed by elements $x\in\mathcal{X}$.
-But using $\mathcal{X}$ itself makes the notation simpler.
+Instead of using $\struct$ as the set of variables some articles use variables $a_{x}$ indexed by elements $x\in\struct$.
+But using $\struct$ itself makes the notation simpler.
 
-The group $\mathbf{Aut}(\mathcal{X})$ of automorphisms of $\mathcal{X}$ acts on $\mathbb{Q}[\mathcal{X}]$ in a variable-wise manner.
-For instance, for $\pi\in\mathbf{Aut}(\mathcal{X})$ and $x,y\in\mathcal{X}$
+The group $\mathbf{Aut}(\struct)$ of automorphisms of $\struct$ acts on $\mathbb{Q}[\struct]$ in a variable-wise manner.
+For instance, for $\pi\in\mathbf{Aut}(\struct)$ and $x,y\in\struct$
 $$\pi(x^2 - 2xy^2 + 3) =
 \pi(x)^2 - 2\pi(x)\pi(y)^2 + 3\ .$$
 
-An ideal in 
+An ideal in $\poly{\Q}{\struct}$ is called \emphdef{equivariant},
+if it is invariant under the action of $\aut{\struct}$.
+%
+\begin{example}
+The set $J_0$ of polynomials in $\poly{\Q}{\struct}$ whose coefficients add up to zero is an equivariant ideal.
 
-\subsection{Equivariant Gröbner bases}
+Equivalently, $J_0 = \setof{f\in\poly{\Q}{\struct}}{f(\mathbf{1}) = 0}$ where $\mathbf{1}$ is the function $\dloQ\to\Q$ defined as $\mathbf{1}(a) = 1$ for all $a\in\dloQ$.
+\end{example}
+%
+For a subset $G\subseteq\poly{\F}{\struct}$,
+the \emphdef{ideal $\idGen{G}$ generated by $G$} is the smallest ideal containing $G$.
+For instance, $\idGen{\setof{a - 1}{a\in\dloQ}} = J_0$
 
-\subsection{Equivariant Buchberger algorithm}
+Similarly, for a subset $G\subseteq\poly{\F}{\struct}$,
+the \emphdef{equivariant ideal $\eqIdGen{G}$ generated by $G$} is the smallest equivariant ideal containing $G$.
+For instance $\eqIdGen{\{a - 1\}} = J_0$ for any $a\in\dloQ$.
+%
+An (equivariant) ideal is called \emphdef{finitely generated} if it is generated by a finite set.
 
-\section{How to use}
+Note that equivariant makes finite generation easier.
+For instance, one can prove that $J_0$ is not finite generated as an ideal,
+but since $J_0 = \eqIdGen{\{a - 1\}}$,
+it is finitely generated as an equivariant ideal.
+%
+\section{Equivariant Gröbner bases}
+%
+We say $\struct$ has the \emphdef{Hilbert basis property} if for every field $\F$, every equivariant ideal $J$ in $\poly{\F}{\struct}$ is generated by a finite set.
 
+Theorems 11 and 12, and Corollary 13 of \cite{GL24} characterised the Hilbert's basis property of relational structures.
+
+\arka{TODO:expand starting from this part}
+
+We call relational $\struct$ to be \emphdef{ordered} if one of the relations of  $\struct$ induces a linear order on $\struct$.
+If we restrict our attention to ordered relational structure,
+then the results of \cite{GL24} collapse to the following theorem.
+%
+\begin{theorem}
+A ordered relational structure satisfies the Hilbert's basis property if and only if finite $\N$-labelled substructures of $\struct$ are well-quasi-ordered under embeddability.
+\end{theorem}
+%
+The article \cite{GL25} builds on their results by defining Gr\"{o}bner bases of equivariant ideals and observes that if a relational structure $\struct$ satisfies the Hilbert's basis property,
+then every equivariant ideals in $\poly{\F}{\struct}$ have finite Gr\"{o}bner bases.
+The central result result of \cite{GL25} is to give a modified version of the equivariant extension of the Buchberger's algorithm that takes as input a finite set $H$ of polynomials in $\poly{\Q}{\struct}$ and outputs a Gr\"{o}bner basis of the equivariant ideal generated by $H$.
+They show that this algorithm terminates when $\struct$ is a ordered relational structure satisfying the Hilbert's basis property.
+%
+%%
+%This chapter is divided into two sections.
+%The first section describes how to define and work with relational structures.
+%%
+%\section{Relational structures}\label{sec:how str}
+%
+%\subsection{Pre-defined relational structures}\label{sec:pre def str}
+%
+%\subsubsection{Dense linear order without endpoints}\label{sec:how dlo}
+%
+%\subsection{Defining new relational structures}\label{sec:how new str}
+%
+%
+%\section{Polynomial rings}
+%
+%\subsection{Ideals}
+%
+%\subsection{Buchberger's algorithm}
+%
+%\subsection{Equivariant Buchberger's algorithm}
+%
+\chapter{Implementation details}\label{sec:impl}
+%
+The implementation is divided into three parts.
+The first part gives a \emph{framework} to write equivariant algorithms.
+The second part is a simple implementation of polynomial rings $\poly{\Q}{\struct}$ where $\struct$ can be any arbitrary data-type.
+The third part combines these two and implements the equivariant Buchberger's algorithm.
+
+The work regarding the third is still in progress,
+so we omit the details of this part.
+%
+\section{Framework for equivariant algorithms}
+%
+We are heavily influenced by \code{LOIS} and \code{N$\lambda$}.
+The main difference is that both \code{LOIS} and \code{N$\lambda$} guarantees that any program written in them is equivariant by construction.
+We only guarantee that any program written following our framework is equivariant.
+The benefit of doing this is that the codebase is significantly smaller and simpler.
+\begin{todo}
+Implement a checker that checks whether a piece of code follows the framework.
+\end{todo}
+%
 \subsection{Relational structures}
+%
+In this framework,
+we define a relational structure by one \code{trait} and by (at least) one \code{struct}.
 
-\subsection{Pre-defined relational structures}
+For instance,
+the relational structure of dense linear order is defined as
+%
+\color{magenta}
+\begin{verbatim}
+pub trait DLO : Ord {
+}
+\end{verbatim}
+\color{black}
+%
+%The functions are kept to ensure that a \code{struct} implementing \code{DLO} is indeed a dense linear order.
+%\begin{todo}
+%Build a test suite that which uses the functions of \code{DLO}.
+%\end{todo}
+%
+\arka{have a better example and improve the writing}
+%
+Now we can implement \code{DLO} for a specific \code{struct} such as \code{Rational} (implemented in the \code{rug} crate).
 
-\paragraph{Dense linear order without endpoints}
+Now, when writing a function with inputs using dense linear orders (for example a list of elements from a dense linear order),
+we write it for an arbitrary \code{struct} implementing \code{dlo}.
+Since the only relation we can use in this case is the order,
+we ensure that the function is equivariant.
+%
+\subsection{Orbits}
+%
+ElementWithAtoms
 
-\subsection{Defining new relational structures}
 
+Theoretically = set with atoms
+
+computationally makes more sense(String, support)
+
+two kinds of objects 
+
+The only way to manipulate orbits is through product, filter and map.
+
+So if the function used inside filter and map is equivariant,
+the filter and map are also equivariant.
+%
+\section{Polynomial rings}
+%
+The file \code{mon.rs} implements polynomials and basic operations on them.
+The standard way to define a polynomial is to first define the variables.
+For instance, the code below show how to define a variable with type \code{String},
+\[
+\text{\code{let x : Polynomial<F2,String> = Polynomial::var("x".to\_string());}}
+\]
+\arka{this needs to clearer and more detailed}
+Here $F2$ is the finite field with two elements.
+Variables themselves are considered as polynomials.
+Once we have defined variables $y$ and $z$ in a similar manner,
+the polynomial $f = x + yz$ can be defined as
+\[
+\text{\code{let f = x.clone() + y.clone()*z.clone()}};
+\] 
+The \code{.clone()} is needed to ensure that the variables can be reused.
+All the usual operations (addition, subtraction, multiplication, powering) of polynomials are defined in \code{mon.rs}.
+
+The only important thing to note here is that monomials are compared using the reverse lexicographic ordering.
+%
+\subsection{Polynomial ideals}
+%
+Polynomials ideals are implemented in \code{ideal.rs}.
+An ideal is defined as a \code{struct} containing a set of its generators.
+At this point the only functions implemented is \code{buchberger},
+which as the name suggests,
+implements the Buchberger's algorithm.
+
+The next steps would be implement ideal membership, equality checking of ideals,
+computation of sum, product and quotients.
+%
 \begin{thebibliography}{9}
+\bibitem{GL24}
+Arka Ghosh and S\l{}awomir Lasota. Equivariant ideals of polynomials, LICS 2024.
+%
 \bibitem{GL25}
 Arka Ghosh and Aliaume Lopez. Computability of equivariant
 Gr\"{o}bner bases, 2025.
-
+%
 \end{thebibliography}
 %
 \end{document}

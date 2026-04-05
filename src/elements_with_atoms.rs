@@ -6,6 +6,7 @@ use super::atoms::*;
 use super::helpers::*;
 use itertools::Itertools;
 
+
 #[derive(Debug, Hash, Clone)]
 pub struct PartialAut<A> where A : AtomsWithOrd + Clone {
 
@@ -13,13 +14,13 @@ pub struct PartialAut<A> where A : AtomsWithOrd + Clone {
 // actually have domain, range and maps.
 // redundancy helps! 
 
-    pub domain : Vec<A>,
-    pub range  : Vec<A>
+    pub domain : BTreeSet<A>,
+    pub range  : BTreeSet<A>
 }
 
 impl<A : Hash + AtomsWithOrd + Clone> PartialAut<A> {
     // add a check that the map is a bijection
-    pub fn new(domain : &Vec<A>, range : &Vec<A>) -> Self {
+    pub fn new(domain : &BTreeSet<A>, range : &BTreeSet<A>) -> Self {
         if domain.len() != range.len() {
             panic!("dom and range must be of same length");
         } else if !has_unique_elements(domain.clone()){
@@ -47,7 +48,7 @@ pub trait ElementsWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
         Self : Sized;
 
     //Gives the support of an element.
-    fn support(&self) -> Vec<A>;
+    fn support(&self) -> BTreeSet<A>;
 
     // Checks if two tuples are in the same orbit
     fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
@@ -80,9 +81,11 @@ pub trait ElementsWithAtoms<A : AtomsWithOrd + Clone + Hash> : Eq {
             }
         }
     
-    //Given a list of representatives of orbits, output a list of representatives of the product of the orbits
-    fn prod_orbit_rep(orbits : &Vec<Self>) -> 
-    Vec<Vec<Self>>
+    //Given a list of orbits, output the list of orbits in the product
+
+    // this should be implementable just by using support and project to orbit and using AtomsWithOrd
+    fn prod_orbit(orbits : &Vec<Orbit<Self>>) -> 
+    Vec<Orbit<A, Vec<Self>>>
     where
         Self : Sized {
 

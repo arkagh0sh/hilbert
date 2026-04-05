@@ -8,8 +8,25 @@
 //     where
 //         Self : Sized;
 // }
-
+use std::hash::Hash;
 use std::collections::BTreeSet;
+use std::marker::PhantomData;
+use super::elements_with_atoms::*;
+
+pub struct Orbit<A : AtomsWithOrd, B> {
+    rep : B,
+    rep_support : BTreeSet<A>
+}
+
+impl<A, B>  PartialEq  for Orbit<A, B>
+where
+    A : AtomsWithOrd + Clone + Hash,
+    B : ElementsWithAtoms<A>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        A::in_same_orbit(&self.rep_support,&other.rep_support)
+    }
+}
 
 /*
 Since we mean to use it only for polynomials,
@@ -17,7 +34,7 @@ we only work with equivariant orbits.
 */
 pub trait AtomsWithOrd : Ord {
 
-    fn in_same_orbit(first : &Vec<Self>, second : &Vec<Self>) -> bool
+    fn in_same_orbit(first : &BTreeSet<Self>, second : &BTreeSet<Self>) -> bool
     where
         Self: Sized;
     
@@ -25,8 +42,8 @@ pub trait AtomsWithOrd : Ord {
 For this one we need repeating tuples also
 */
 
-    fn orbit_reps(n : usize) -> 
-    Vec<Vec<Self>>
+    fn orbit(n : usize) -> 
+    Vec<Orbit<BTreeSet<Self>>>
     where
         Self : Sized;
 }
