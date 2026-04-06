@@ -1,4 +1,4 @@
-\documentclass[10pt,a4paper]{memoir}
+\documentclass[12pt,a4paper,article]{memoir}
 %
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{hyperref}
@@ -30,7 +30,8 @@ $ $\\}
 \newcommand{\idGen}[1]{\langle#1\rangle}
 \newcommand{\eqIdGen}[1]{\langle#1\rangle_{\textnormal{eqv}}}
 
-\newcommand{\arka}[1]{\textcolor{red}{Arka:#1}}
+\newcommand{\arka}[1]{}
+%{\textcolor{red}{Arka:#1}}
 \newcommand{\emphdef}[1]{\emph{\textcolor{BrickRed}{#1}}}
 \newcommand{\code}[1]{\texttt{\textcolor{magenta}{#1}}}
 
@@ -45,7 +46,6 @@ $ $\\}
 \maketitle
 \raggedbottom
 %
-\pagebreak
 \tableofcontents
 %
 \pagebreak
@@ -146,7 +146,11 @@ then $f = -0.5$.
 %
 \begin{example}
 For any subset $S\subseteq X\to \F$,
-the set $\setof{f\in\poly{\F}{X}}{f(\alpha) = 0\text{ for all }\alpha\in S}$ is an ideal inside $\poly{\F}{X}$.
+the set
+\[
+\setof{f\in\poly{\F}{X}}{f(\alpha) = 0\text{ for all }\alpha\in S}
+\]
+is an ideal inside $\poly{\F}{X}$.
 \end{example}
 %
 \section{Equivariant ideals}
@@ -248,50 +252,90 @@ The benefit of doing this is that the codebase is significantly smaller and simp
 Implement a checker that checks whether a piece of code follows the framework.
 \end{todo}
 %
-\subsection{Relational structures}
+Like \code{LOIS} and \code{N$\lambda$} we categories objects into two categories,
+\emphdef{elements of orbits} (encoded by the \code{trait} \code{ElementsWithAtoms}) and \emphdef{orbits} (encoded by the \code{struct} \code{Orbit}).
+\footnote{Obviously, orbits themselves can be elements of orbits.
+However, since we only deal with equivariant orbits as of now,
+orbits of orbits are singleton.
+\arka{This is schizophrenic}}
 %
-In this framework,
-we define a relational structure by one \code{trait} and by (at least) one \code{struct}.
+\subsection{\code{trait AtomsWithOrd}}
+%
+This gives the framework for working with \emph{computationally oligomorphic relational structures}.
+To make a \code{struct A} satisfy this \code{trait},
+one has to implement two basic operations.
+\begin{enumerate}
+\item \code{in\_same\_orbit}: This function checks if two \code{BTreeSet<A>} are in the same orbit.
+\item \code{orbits\_in\_product} : This functions takes two orbits $B$ and $C$ of \code{BTreeSet<A>} as input and outputs the orbits of \code{(BTreeSet<A>,BTreeSet<A>)} in $B\times C$. 
+\end{enumerate}
+%
+\subsubsection{Defining relational structures}
+%
+One must be careful while defining a new \code{struct} as a relational structure.
+Our recommended way of defining a relational structure is to use a wrapper class so the actual value can be accessed by the functions that are defined in the struct.
 
-For instance,
-the relational structure of dense linear order is defined as
-%
+For illustration we define \code{DLO} as
 \color{magenta}
 \begin{verbatim}
-pub trait DLO : Ord {
+#[derive(PartialEq, PartialOrd,Eq,Ord)]
+pub struct DLO {
+    val : Rational
 }
 \end{verbatim}
 \color{black}
 %
-%The functions are kept to ensure that a \code{struct} implementing \code{DLO} is indeed a dense linear order.
-%\begin{todo}
-%Build a test suite that which uses the functions of \code{DLO}.
-%\end{todo}
+Observe that the field \code{val} is private.
+Therefore one cannot write codes that uses operations other than the order and equality on \code{DLO}.
+For instance, this disallows code snippets such as
+\color{magenta}
+\begin{verbatim}
+let r : Rational = (x.val + y.val)/2;
+let z : DLO = DLO::new(r);
+\end{verbatim}
+\color{black}
 %
-\arka{have a better example and improve the writing}
+\arka{one can still write a piece of code that runs on a while loop and computes an element greater than a given element}
 %
-Now we can implement \code{DLO} for a specific \code{struct} such as \code{Rational} (implemented in the \code{rug} crate).
-
-Now, when writing a function with inputs using dense linear orders (for example a list of elements from a dense linear order),
-we write it for an arbitrary \code{struct} implementing \code{dlo}.
-Since the only relation we can use in this case is the order,
-we ensure that the function is equivariant.
+\subsection{\code{trait ElementsWithAtoms<A>}}
 %
-\subsection{Orbits}
+This is the \code{trait} for elements of orbits constructed from the atoms \code{A}.
+To implement this \code{trait} for a \code{struct B} one has to implement three functions.
+\begin{enumerate}
+\item \code{support()}: This computes the support of an element.
+\item \code{project\_to\_support(X : Orbit<A,B>, S : BTreeSet<A>)}: This takes an orbit \code{X} inside \code{B} finite subset of elements of \code{A} as inputs and outputs all elements in \code{X} that are supported by \code{S}.
+\end{enumerate}
 %
-ElementWithAtoms
+\subsection{\code{struct Orbit<A,B>}}
+%
+This is the structure of orbits of elements of another \code{struct B} under the action of the automorphism group of another \code{struct A}.
+An object is given by its representative \code{rep}.
+This field is kept private.
+This is necessary to ensure that any function that takes orbits as input is equivariant.
+%
+\arka{we have to add definition of equivariance and explain it}
+%
+An object of the \code{struct} \code{orbit} is given by its representative \code{rep} which must satisfy the \code{trait} \code{ElementsWithAtoms}.
+The \code{rep} field is hidden,
+this ensures that orbits can only be accessed in specific ways (explained below) that preserves equivariance.
 
-
-Theoretically = set with atoms
-
-computationally makes more sense(String, support)
-
-two kinds of objects 
-
-The only way to manipulate orbits is through product, filter and map.
-
-So if the function used inside filter and map is equivariant,
-the filter and map are also equivariant.
+Orbits are considered as lists indexed by elements of
+\code{BTreeSet<A : AtomsWithOrd>}.
+This is consistent with the theoretical result that every orbit of set with atoms $\struct$ is isomorphic to an equivariant subset of $\binom{\struct}{n}$ for some $n\in\N$,
+Orbits can be accessed in the following ways:
+\begin{enumerate}
+\item Given two orbits $B$ and $C$, one can check if they are equal.
+\item Given an orbit $B$ and \code{S : BTreeSet<A>} one can compute the elements in the orbit supported by \code{S}.
+\item Given two orbits $B$ and $C$, one can compute the list of orbits in the product $B\times C$.
+\item Given an equivariant function $f$ with domain containing $B$,
+one can compute $f(B)$ by applying \code{map}.
+\item Given an equivariant function $f$ with domain containing $B$ and boolean output,
+one can filter $B$ using $f$.
+Observe that since $f$ is equivariant, this means the result of the filtering is either $B$ or $\emptyset$.
+\end{enumerate}
+The reason behind doing the above is the following.
+First, we ensure that any function with input and output types satisfying the trait \code{ElementsWithAtoms} is equivariant.
+Second, we ensure that orbits can only be accessed in specific ways that preserves equivariance.
+As a consequence, any function that takes orbits as input must be equivariant.
 %
 \section{Polynomial rings}
 %

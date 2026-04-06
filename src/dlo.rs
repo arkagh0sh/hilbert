@@ -8,56 +8,20 @@ use super::{atoms::*, helpers::*};
 
 
 // the trait for dense linear order without endpoints
-pub trait DLO : Ord {
 
-    #[pre(lower < upper)]
-    #[post(lower < ret)]
-    #[post(upper > ret)]
-    fn find_between(lower : Self, upper : Self) -> Self;
-
-    // just to ensure that the set is non empty
-    fn an_elem() -> Self;
-
-    #[post(lower < ret)]
-    fn bigger(lower : Self) -> Self;
-
-    #[post(upper > ret)]
-    fn smaller(upper : Self) -> Self;
-}
-
-impl DLO for Rational {
-   fn an_elem() -> Self {
-       Rational::from(0)
-   }
-
-   fn bigger(lower : Self) -> Self {
-       lower + 1
-   }
-
-   fn smaller(upper : Self) -> Self {
-       upper - 1
-   }
-
-   fn find_between(lower : Self, upper : Self) -> Self {
-       (lower + upper)/1
-   }
-}
-
-
-#[derive(Clone)]
-#[derive(Hash)]
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct DLO_var {
+#[derive(PartialEq, PartialOrd,Eq,Ord)]
+pub struct DLO {
     val : Rational
 }
 
-impl DLO_var {
-    pub fn new(q : Rational) -> DLO_var {
-        DLO_var {val : q}
+
+impl DLO {
+    pub fn new(q : Rational) -> DLO {
+        DLO {val : q}
     }
 }
 
-impl Debug for DLO_var {
+impl Debug for DLO {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let mut to_view : String = String::new();
         to_view = to_view + "d(" + &self.val.to_string() + ")";
